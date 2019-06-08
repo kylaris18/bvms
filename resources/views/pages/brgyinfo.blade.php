@@ -5,73 +5,63 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-        View Violations
-        <button type="button" class="btn btn-success pull-right" onclick="generateReport()">Generate Report</button>
+        Baranggay Details
       </h1>
     </section>
 
     <!-- Main content -->
     <section class="content">
       <div class="row">
-        <form class="form-horizontal">
-            <div class="box-body">
-              <div class="col-sm-12">
-                <div class="form-group">
-                  <label for="detailFiled" class="col-sm-2 control-label">Date filed:</label>
-                  <div class="col-sm-4">
-                    <input type="text" class="form-control" id="detailFiled">
-                  </div>
-                </div>
-                <br/>
-                <br/>
-                <div class="col-sm-6">
-                  <div class="form-group">
-                    <label for="detailDate" class="col-sm-4 control-label">Violation Date:</label>
-                    <div class="col-sm-8">
-                      <input type="text" class="form-control" id="detailDate">
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-6">
-                  <div class="form-group">
-                    <label for="detailStatus" class="col-sm-4 control-label">Status:</label>
-                    <div class="col-sm-8">
-                      <p id="detailStatus" class="form-control"></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-6">
-                  <div class="form-group">
-                    <label for="detailViolation" class="col-sm-4 control-label">Violation:</label>
-                    <div class="col-sm-8">
-                      <input type="text" class="form-control" id="detailViolation">
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-6">
-                  <div class="form-group">
-                    <label for="detailViolator" class="col-sm-4 control-label">Offender:</label>
-                    <div class="col-sm-8">
-                      <input type="text" class="form-control" id="detailViolator">
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="detailProof">Evidence Photo:</label>
-                  <input type="file" name="detailProof" id="detailProof">
-                </div>
-                <div class="form-group">
-                  <label>Notes:</label>
-                  <textarea class="form-control" id="detailNotes" rows="5" placeholder="Enter notes"></textarea>
-                </div>
-                <div class="form-group">
-                  <label>Resolution:</label>
-                  <textarea class="form-control" id="detailResolution" rows="5"></textarea>
-                </div>
-                <input type="hidden" name="detailId" id="detailId">
-              </div>
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header with-border">
+              <h3 class="box-title">List of Officials and General Info about our Baranggay</h3>
+              <?php if (Session::get('userSession')['account_id'] === 1) echo '<button class="btn btn-primary pull-right" id="updateBrgyDetails">Update Details</button>'?>
             </div>
-          </form>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <form role="form" id="brgyForm">
+                <?php
+                  $bReadonly = 'readonly';
+                  if (Session::get('userSession')['account_id'] === 1) {
+                    $bReadonly = '';
+                  }
+                ?>
+                <!-- text input -->
+                <div class="form-group">
+                  <label>Brgy Name:</label>
+                  <input type="text" class="form-control" name="brgyName" placeholder="Enter Brgy Name..." value="<?=$aBrgy->brgy_name?>" <?=$bReadonly?>>
+                </div>
+                <div class="form-group">
+                  <label>Brgy Address</label>
+                  <input type="text" class="form-control" name="brgyAddress" placeholder="Enter Brgy Address..."  value="<?=$aBrgy->brgy_address?>" <?=$bReadonly?>>
+                </div>
+                <div class="form-group">
+                  <label>Brgy Captain:</label>
+                  <input type="text" class="form-control" name="brgyCaptain" placeholder="Enter ..." value="<?=$aBrgy->brgy_captain?>" <?=$bReadonly?>>
+                </div>
+                <div class="form-group">
+                  <label>Brgy Councilors</label>
+                  <?php
+                    foreach ($aCouncilors as $aCouncilor) {
+                      echo '<input type="text" name="brgyCouncilor[]" class="form-control" placeholder="Enter Councilor ..." value="'. $aCouncilor->councilor_name .'" '. $bReadonly .'>';
+                    }
+                  ?>
+                </div>
+                <div class="form-group">
+                  <label>S.K. Chairman</label>
+                  <input type="text" name="brgySk" class="form-control" placeholder="Enter ..." value="<?=$aBrgy->brgy_sk?>" <?=$bReadonly?>>
+                </div>
+                <div class="form-group">
+                  <label>Current Tanod Count:</label>
+                  <input type="text" class="form-control" placeholder="Enter ..." value="<?=$iTanod?>" readonly>
+                </div>
+              </form>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
         <!-- /.col -->
       </div>
       <!-- /.row -->
@@ -243,6 +233,56 @@
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 <script type="text/javascript">
+  $(document).on('click', '#updateBrgyDetails', function(event) {
+    event.preventDefault();
+    var oFormData = new FormData(document.getElementById('brgyForm'));
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "This action will modify details of the baranggay.",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return fetch('{{ url("/") }}/info/modify', {
+            method:'POST',
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+            body: oFormData
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(response.statusText)
+              }
+              return response.json()
+            })
+            .catch(error => {
+              Swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+            })
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      }).then((result) => {
+        console.log(result);
+        if (result.value.bResult === true) {
+          Swal.fire(
+            'Success!',
+            'Baranggay details modified successfully.',
+            'success'
+          ).then(function(){
+            location.reload();
+          })
+        } else {
+          Swal.fire(
+            'Something went wrong!',
+            result.value.sMessage,
+            'warning'
+          )
+        }
+      });
+  });
 
     // console.log(aViolators);
     // console.log(Object.values(aViolators));

@@ -33,6 +33,9 @@
               </li>
               <!-- Menu Footer-->
               <li class="user-footer">
+                <div class="pull-left">
+                  <a href="/users/update" class="btn btn-default btn-flat">Update Profile</a>
+                </div>
                 <div class="pull-right">
                   <a href="/clear" class="btn btn-default btn-flat">Sign out</a>
                 </div>

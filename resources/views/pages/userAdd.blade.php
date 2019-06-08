@@ -29,10 +29,6 @@
                   <label>First Name:</label>
                   <input id="nameFirst" name="nameFirst" type="text" class="form-control" placeholder="Enter First Name...">
                 </div>
-                <div class="form-group">
-                  <label>Middle Name:</label>
-                  <input id="nameInit" name="nameInit" type="text" class="form-control" placeholder="Enter Middle Name...">
-                </div>
 
                 <div class="form-group">
                   <label>Contact Info:</label>

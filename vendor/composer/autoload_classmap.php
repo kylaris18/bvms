@@ -7,8 +7,11 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Accounts' => $baseDir . '/app/Accounts.php',
+    'App\\Brgy' => $baseDir . '/app/Brgy.php',
     'App\\Console\\Kernel' => $baseDir . '/app/Console/Kernel.php',
+    'App\\Councilor' => $baseDir . '/app/Councilor.php',
     'App\\Exceptions\\Handler' => $baseDir . '/app/Exceptions/Handler.php',
+    'App\\Exports\\ReportExport' => $baseDir . '/app/Exports/ReportExport.php',
     'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
     'App\\Http\\Controllers\\Auth\\LoginController' => $baseDir . '/app/Http/Controllers/Auth/LoginController.php',
     'App\\Http\\Controllers\\Auth\\RegisterController' => $baseDir . '/app/Http/Controllers/Auth/RegisterController.php',

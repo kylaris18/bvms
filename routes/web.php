@@ -35,3 +35,6 @@ Route::post('/users/suspendUser', 'UserController@suspendUser');
 Route::post('/violations/modify', 'DashboardController@modifyViolation');
 Route::get('/report/generate/{violatorId}', 'DashboardController@generateReport');
 Route::get('/info', 'UserController@brgyInfo');
+Route::post('/info/modify', 'UserController@modifyBrgyInfo');
+Route::get('/users/update', 'UserController@updateUser');
+Route::post('/users/modify', 'UserController@modifyUser');

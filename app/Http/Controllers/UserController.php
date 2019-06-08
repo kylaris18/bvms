@@ -15,7 +15,6 @@ class UserController extends BaseController
     	if (session()->get('userSession') === null) {
     		return redirect()->route('login');
     	}
-    	var_dump(session()->all());
     }
 
     public function loginView()
@@ -57,11 +56,13 @@ class UserController extends BaseController
             ->first();
             
         $aUserSession = array(
-            'fname'        => $aUsers->user_fname,
-            'lname'        => $aUsers->user_lname,
-            'account_id'   => $aLoginResult->account_id,
-            'account_type' => $aLoginResult->account_type,
-            'user_photo'   => $aUsers->user_photo
+            'fname'          => $aUsers->user_fname,
+            'lname'          => $aUsers->user_lname,
+            'account_id'     => $aLoginResult->account_id,
+            'account_type'   => $aLoginResult->account_type,
+            'user_contactno' => $aUsers->user_contactno,
+            'account_uname'  => $aLoginResult->account_uname,
+            'user_photo'     => $aUsers->user_photo
         );
         session()->put('userSession', $aUserSession);
         $aReturn = [
@@ -78,7 +79,7 @@ class UserController extends BaseController
     public function checkUniqUser($sUsername)
     {
         $aUser = DB::table('users')
-            ->where('account_id', $aLoginResult->account_id)
+            ->where('account_id', $sUsername)
             ->first();
 
         return $aUser === null ? true : false;
@@ -135,7 +136,7 @@ class UserController extends BaseController
     {
         $iUserId = DB::table('users')->insertGetId([
             'account_id'     => $iAccountId,
-            'user_fname'     => $aNewAccount['nameFirst'] . ' ' . $aNewAccount['nameInit'],
+            'user_fname'     => $aNewAccount['nameFirst'],
             'user_lname'     => $aNewAccount['nameLast'],
             'user_photo'     => $aNewAccount['userPhoto'],
             'user_contactno' => $aNewAccount['contactNo']
@@ -186,6 +187,152 @@ class UserController extends BaseController
 
     public function brgyInfo()
     {
-        return view('pages.brgyinfo');
+        $aBrgy = DB::table('brgies')
+            ->first();
+        $aCouncilors = DB::table('councilors')
+            ->get();
+        $iTanod = DB::table('users')
+            ->count();
+        return view('pages.brgyinfo', [
+            'aBrgy'       => $aBrgy,
+            'aCouncilors' => $aCouncilors,
+            'iTanod'      => $iTanod - 1
+        ]);
+    }
+
+    public function modifyBrgyInfo(Request $request)
+    {
+        $aBrgy = $request->all();
+        $bBrgyResult = DB::table('brgies')
+            ->where('id', 1)
+            ->update([
+                'brgy_name'    => $aBrgy['brgyName'],
+                'brgy_address' => $aBrgy['brgyAddress'],
+                'brgy_captain' => $aBrgy['brgyCaptain'],
+                'brgy_sk'      => $aBrgy['brgySk']
+            ]);
+        if ($bBrgyResult !== 1) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Modify Brgy Failed. Please change some details and try Again.'
+            ];
+            return $this->returnJson($aReturn);
+        }
+
+        DB::table('councilors')->truncate();
+
+        $aCouncilors = [];
+
+        foreach ($aBrgy['brgyCouncilor'] as $sCouncilor) {
+            $aCouncilors[] = ['councilor_name' => $sCouncilor];
+        }
+
+        $bCouncilorResult = DB::table('councilors')->insert($aCouncilors);
+        if ($bCouncilorResult !== true) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Modify Councilors Failed. Please Try Again.'
+            ];
+            return $this->returnJson($aReturn);
+        }
+
+        $aReturn = [
+            'bResult' => true
+        ];
+        return $this->returnJson($aReturn);
+    }
+
+    public function updateUser()
+    {
+        return view('pages.userUpdate');
+    }
+
+    public function modifyUser(Request $request)
+    {
+        $aAccount = $request->all();
+        $bCheckUniqUser = $this->checkUniqUser($aAccount['userName']);
+        if ($bCheckUniqUser === false) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Username exists. Please change username and try again.'
+            ];
+            return $this->returnJson($aReturn);
+        }
+        $aAccount = $this->uploadPhoto($aAccount, 'userPhoto', '/profile');
+        $aUpdate = ['account_uname' => $aAccount['userName']];
+        $aUpdate = $this->validateChangePass($aUpdate, $aAccount);
+        if (array_key_exists('bResult', $aUpdate) === true) {
+            return $this->returnJson($aUpdate);
+        }
+        $bResult = DB::table('accounts')
+            ->where('account_id', $aAccount['account_id'])
+            ->update($aUpdate);
+        return $this->updateUserDetails($aAccount['account_id'], $aAccount, $bResult);
+    }
+
+    public function updateUserDetails($iAccountId, $aAccount, $bAccountUpdate)
+    {
+        $aUpdate = [
+            'user_fname' => $aAccount['nameFirst'],
+            'user_lname' => $aAccount['nameLast'],
+            'user_contactno' => $aAccount['contactNo']
+        ];
+        if (array_key_exists('userPhoto', $aAccount) === true) {
+            $aUpdate['user_photo'] = $aAccount['userPhoto'];
+        }
+        $bResult = DB::table('users')
+            ->where('account_id', $aAccount['account_id'])
+            ->update($aUpdate);
+        if ($bResult !== 1 && $bAccountUpdate !== 1) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Update Account and Profile Failed. Please change some details and try Again.'
+            ];
+            return $this->returnJson($aReturn);
+        }
+
+        $aUserSession = array(
+            'fname'          => $aAccount['nameFirst'],
+            'lname'          => $aAccount['nameLast'],
+            'account_id'     => session()->get('userSession')['account_id'],
+            'account_type'   => session()->get('userSession')['account_type'],
+            'user_contactno' => array_key_exists('contactno', $aAccount) === true ? $aAccount['contactno'] : session()->get('userSession')['user_contactno'],
+            'user_photo'     => session()->get('userSession')['user_photo'],
+            'account_uname'  => $aAccount['userName']
+        );
+        session()->put('userSession', $aUserSession);
+        $aReturn = [
+            'bResult' => true
+        ];
+        return $this->returnJson($aReturn);
+    }
+
+    public function validateChangePass($aUpdate, $aAccount)
+    {
+        if ($aAccount['currPass'] === null || $aAccount['newPass'] === null || $aAccount['repeatPass'] === null) {
+            return $aUpdate;
+        }
+        $aLoginResult = DB::table('accounts')
+            ->where('account_uname', $aAccount['userName'])
+            ->where('account_password', sha1($aAccount['currPass']))
+            ->first();
+
+        if ($aLoginResult === null) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Wrong password. Please try Again.'
+            ];
+            return $aReturn;
+        }
+
+        if ($aAccount['newPass'] !== $aAccount['repeatPass']) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Password does not match. Please try Again.'
+            ];
+        }
+
+        $aUpdate['account_password'] = sha1($aAccount['newPass']);
+        return $aUpdate;
     }
 }

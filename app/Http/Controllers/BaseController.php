@@ -36,8 +36,9 @@ class BaseController extends Controller
             $oImage = $aDetails[$sPhoto];
             $sFilename = time();
             $sFile = $this->uploadOne($oImage, $sFolder, 'public', $sFilename);
+            $aDetails[$sPhoto] = '/storage/' . $sFile;
+            return $aDetails;
         }
-        $aDetails[$sPhoto] = '/storage/' . $sFile;
         return $aDetails;
     }
 }
