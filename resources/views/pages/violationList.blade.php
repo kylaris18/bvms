@@ -417,7 +417,7 @@
         return obj.violation_id === iViolationId
       });
       var oViolation = aResult[0];
-      var bReadonly = oViolation.account_id === <?=session()->get('userSession')['account_id']?> ? false : true;
+      var bReadonly = oViolation.account_id === <?=session()->get('userSession')['account_id']?> ||  <?=session()->get('userSession')['account_id']?> === 1? false : true;
       $('#detailFiled').val(formatDate(oViolation.violation_report)).attr('readonly', true);
       $('#detailDate').val(formatDate(oViolation.violation_date)).attr('readonly', bReadonly);
       $('#detailStatus').html(formatStatus(oViolation.violation_status));
@@ -425,6 +425,7 @@
       $('#detailViolator').val(aViolators[oViolation.violation_violator]).attr('readonly', true);
       $('#detailNotes').text(oViolation.violation_notes).attr('readonly', bReadonly);
       $('#detailResolution').text(oViolation.violation_resolution === null ? '' : oViolation.violation_resolution).attr('readonly', bReadonly);
+      if (<?=session()->get('userSession')['account_id']?> === 1) {}
       if (bReadonly === true) {
         $('#detailFooter').html('<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>');
       } else {

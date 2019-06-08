@@ -78,8 +78,8 @@ class UserController extends BaseController
 
     public function checkUniqUser($sUsername)
     {
-        $aUser = DB::table('users')
-            ->where('account_id', $sUsername)
+        $aUser = DB::table('accounts')
+            ->where('account_uname', $sUsername)
             ->first();
 
         return $aUser === null ? true : false;
