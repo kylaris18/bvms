@@ -148,7 +148,6 @@
   $('#nameLast').on('change', function(event) {
     $('#nameFirst').val();
     $('#nameInit').val();
-    console.log($(this).val());
     $('#nameFirst').autocomplete({
       source: aFirstname[$(this).val()]
     });
@@ -174,13 +173,9 @@
   });
 
   $(document).on('submit', '#violationForm', function (e) {
-    // console.log($('#violationForm'));
     e.preventDefault();
     var oFormData = new FormData(this);
     oFormData.append('violationNotes', $('#violationNotes').val());
-    for (var pair of oFormData.entries()) {
-      console.log(pair[0]+ ', ' + pair[1]);
-    }
     
     $.ajax({
       type:'POST',
@@ -192,12 +187,22 @@
       processData: false,
       headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
       success:function(aData){
-        console.log(aData);
-        // if (aData.bResult === true) {
-        //   location.href = '/violations/list';
-        // } else {
-        //   alert('Wrong username and/or password. Please try again.');
-        // }
+        if (aData.bResult === true) {
+          Swal.fire(
+            'Success!',
+            'Violation added successfully.',
+            'success'
+          ).then(function(){
+            location.reload();
+          })
+          location.href = '/violations/add';
+        } else {
+          Swal.fire(
+            'Error!',
+            aData.sMessage,
+            'warning'
+          );
+        }
       }
     });
   });

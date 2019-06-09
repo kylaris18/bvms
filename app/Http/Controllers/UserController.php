@@ -19,8 +19,6 @@ class UserController extends BaseController
 
     public function loginView()
     {
-        // var_dump(DB::table('accounts')->get());
-        // var_dump(Accounts::all());
     	return view('pages.login');
     }
 
@@ -97,24 +95,6 @@ class UserController extends BaseController
             return $this->returnJson($aReturn);
         }
         $aNewAccount = $this->uploadPhoto($aNewAccount, 'userPhoto', '/profile');
-
-        // if ($request->has('userPhoto')) {
-        //     // Get image file
-        //     $image = $request->file('userPhoto');
-        //     // Make a image name based on user name and current timestamp
-        //     $name = str_slug($request->input('userName')).'_'.time();
-        //     // Define folder path
-        //     $folder = '/profile';
-        //     // Make a file path where image will be stored [ folder path + file name + file extension]
-        //     $filePath = $folder . $name. '.' . $image->getClientOriginalExtension();
-        //     // Upload image
-        //     $file = $this->uploadOne($image, $folder, 'public', $name);
-        //     var_dump($file);
-        //     // Set user profile image path in database to filePath
-        //     // $user->profile_image = $filePath;
-        // }
-
-        // var_dump($aNewAccount);
 
         $iAccountId = DB::table('accounts')->insertGetId([
             'account_uname'    => $aNewAccount['userName'],
@@ -250,13 +230,15 @@ class UserController extends BaseController
     public function modifyUser(Request $request)
     {
         $aAccount = $request->all();
-        $bCheckUniqUser = $this->checkUniqUser($aAccount['userName']);
-        if ($bCheckUniqUser === false) {
-            $aReturn = [
-                'bResult'  => false,
-                'sMessage' => 'Username exists. Please change username and try again.'
-            ];
-            return $this->returnJson($aReturn);
+        if ($aAccount['userName'] !== session()->get('userSession')['account_uname']) {
+            $bCheckUniqUser = $this->checkUniqUser($aAccount['userName']);
+            if ($bCheckUniqUser === false) {
+                $aReturn = [
+                    'bResult'  => false,
+                    'sMessage' => 'Username exists. Please change username and try again.'
+                ];
+                return $this->returnJson($aReturn);
+            }
         }
         $aAccount = $this->uploadPhoto($aAccount, 'userPhoto', '/profile');
         $aUpdate = ['account_uname' => $aAccount['userName']];

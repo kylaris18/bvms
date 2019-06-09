@@ -244,9 +244,26 @@ class DashboardController extends BaseController
                 'Offence Resolution' => $aViolation->violation_resolution
             ];
         }
-        $sFilename = time() . '.xlsx';
-        Excel::store(new ReportExport($aHeadings, $aViolationData), '/public/reports/' . $sFilename);
+        $sReportTime = time();
+        $sFilename = $sReportTime . '.xlsx';
+        $sReportPath = '/reports/' . $sFilename;
+        Excel::store(new ReportExport($aHeadings, $aViolationData), '/public' .$sReportPath);
         // return Excel::download(new ReportExport($aHeadings, $aViolationData), $sFilename);
+
+
+        $iReportId = DB::table('reports')->insertGetId([
+            'account_id'  => session()->get('userSession')['account_id'],
+            'violator_id' => $aViolator->violator_id,
+            'report_path' => '/storage' . $sReportPath,
+            'report_date' => $sReportTime
+        ]);
+        if ($iReportId === null) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Report saving failed. Please try again.'
+            ];
+            return $this->returnJson($aReturn);
+        }
         $aReturn = [
             'bResult' => true,
             'sFilename' => $sFilename
@@ -257,5 +274,17 @@ class DashboardController extends BaseController
     public function archive()
     {
     	return view('pages.violationArchive');
+    }
+
+    public function reportList()
+    {
+        $aUsers = DB::table('users')->get();
+        $aViolators = DB::table('violators')->get();
+        $aReports = DB::table('reports')->orderBy('report_id', 'desc')->get();
+        return view('pages.reportList', [
+            'aViolators'  => $aViolators,
+            'aUsers'      => $aUsers,
+            'aReports'      => $aReports
+        ]);
     }
 }

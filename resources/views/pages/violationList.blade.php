@@ -305,18 +305,12 @@
     var aTypeList = JSON.parse('<?=json_encode($aTypeList, true)?>');
     var aUsersList = JSON.parse('<?=json_encode($aUsersList, true)?>');
     var aViolations = JSON.parse('<?=json_encode($aViolations, true)?>');
-    console.log(aViolators);
-    console.log(Object.values(aViolators));
-    console.log(aTypeList);
-    console.log(aUsersList);
-    console.log(aViolations);
 
     function formatDate(iTimestamp) {
       return new Date(iTimestamp * 1000).toISOString().slice(0,10).split('-').join('/')
     }
 
     function generateReport() {
-      // console.log(aViolators.1);
       var aViolatorList = Object.values(aViolators);
       var sViolatorsHtml = '<datalist id="myCustomList">';
       var oReverseViolator = {};
@@ -324,12 +318,10 @@
         sViolatorsHtml += '<option data-violatorid="'+ iKey +'" value="'+ aViolators[iKey] +'"/>';
         oReverseViolator[aViolators[iKey]] = iKey;
       });
-      console.log(oReverseViolator);
       sViolatorsHtml += '</datalist>';
       $('body').append(sViolatorsHtml);
       Swal.fire({
         title: 'Generate violator report.',
-        // html: sViolatorsHtml,
         input: 'text',
         inputAttributes: {
           autocapitalize: 'off',
@@ -357,7 +349,6 @@
         allowOutsideClick: () => !Swal.isLoading()
       }).then((result) => {
         if (result.value) {
-          console.log(result.value);
           Swal.fire({
             title: 'Download will begin shortly...',
             timer: 2000,
@@ -425,7 +416,6 @@
       $('#detailViolator').val(aViolators[oViolation.violation_violator]).attr('readonly', true);
       $('#detailNotes').text(oViolation.violation_notes).attr('readonly', bReadonly);
       $('#detailResolution').text(oViolation.violation_resolution === null ? '' : oViolation.violation_resolution).attr('readonly', bReadonly);
-      if (<?=session()->get('userSession')['account_id']?> === 1) {}
       if (bReadonly === true) {
         $('#detailFooter').html('<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>');
       } else {
@@ -470,7 +460,6 @@
         },
         allowOutsideClick: () => !Swal.isLoading()
       }).then((result) => {
-        console.log(result);
         if (result.value.bResult === true) {
           Swal.fire(
             'Success!',
@@ -479,6 +468,12 @@
           ).then(function(){
             location.reload();
           })
+        } else {
+          Swal.fire(
+            'Error!',
+            result.value.sMessage,
+            'warning'
+          );
         }
       });
     }
@@ -528,7 +523,6 @@
         },
         allowOutsideClick: () => !Swal.isLoading()
       }).then((result) => {
-        console.log(result);
         if (result.value.bResult === true) {
           Swal.fire(
             'Success!',
@@ -537,6 +531,12 @@
           ).then(function(){
             location.reload();
           })
+        } else {
+          Swal.fire(
+            'Error!',
+            result.value.sMessage,
+            'warning'
+          );
         }
       });
     }
@@ -548,9 +548,6 @@
 
     function escalateViolation() {
       var oFormData = new FormData(document.getElementById('escalateForm'));
-      // oFormData.append('iViolatorId', $('#iViolatorId').val());
-      // oFormData.append('violationList', $('#iViolationType').val());
-      // oFormData.append('violationDate', $('#violationDate').val());
       oFormData.append('violationNotes', $('#violationNotes').val());
       Swal.fire({
         title: 'Are you sure?',
@@ -589,6 +586,12 @@
           ).then(function(){
             location.reload();
           })
+        } else {
+          Swal.fire(
+            'Error!',
+            result.value.sMessage,
+            'warning'
+          );
         }
       });
     }

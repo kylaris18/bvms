@@ -48,7 +48,6 @@
        dataType: 'json',
        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
        success:function(aData){
-          console.log(aData);
           if (aData.bResult === true) {
             location.href = '/violations/list';
           } else {

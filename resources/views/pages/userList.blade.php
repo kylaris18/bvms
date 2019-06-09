@@ -160,6 +160,12 @@
           ).then(function(){
             location.reload();
           })
+        } else {
+          Swal.fire(
+            'Error!',
+            result.value.sMessage,
+            'warning'
+          );
         }
       });
     }

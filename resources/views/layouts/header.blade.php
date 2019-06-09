@@ -28,7 +28,7 @@
 
                 <p>
                   {{ Session::get('userSession')['fname'] . ' ' . Session::get('userSession')['lname'] }} - Brgy. Tanod
-                  <small>Member since Nov. 2012</small>
+                  <small>Username: {{ Session::get('userSession')['account_uname'] }}</small>
                 </p>
               </li>
               <!-- Menu Footer-->
