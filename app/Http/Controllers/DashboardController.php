@@ -287,4 +287,23 @@ class DashboardController extends BaseController
             'aReports'      => $aReports
         ]);
     }
+
+    public function deleteViolation(Request $request)
+    {
+        $iViolatorId = $request->input('violationId');
+        $bResult = DB::table('violations')
+            ->where('violation_id', $iViolatorId)
+            ->delete();
+        if ($bResult !== 1) {
+            $aReturn = [
+                'bResult'  => false,
+                'sMessage' => 'Delete violation failed. Please try again.'
+            ];
+            return $this->returnJson($aReturn);
+        }
+        $aReturn = [
+            'bResult' => true
+        ];
+        return $this->returnJson($aReturn);
+    }
 }

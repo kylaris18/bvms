@@ -21,6 +21,9 @@
             <!-- /.box-header -->
             <div class="box-body">
               <?php
+                // Get top violations
+                $aTopViolations = [];
+
                 // Set aViolatorList
                 $aViolatorList = [];
                 foreach ($aViolators as $aTempViolator) {
@@ -58,7 +61,15 @@
                 </thead>
                 <tbody>
                   <?php
-                    foreach ($aViolations as $aViolation) {
+                    foreach ($aViolations as $iKey => $aViolation) {
+                      $sCurrentKey = $aViolation->violation_violator . '-' . $aViolation->type_id;
+                      if (array_key_exists($sCurrentKey, $aTopViolations) === false) {
+                        $aTopViolations[$sCurrentKey] = $iKey;
+                      } else {
+                        if ($aViolation->violation_status > $aViolations[$aTopViolations[$sCurrentKey]]->violation_status) {
+                          $aTopViolations[$sCurrentKey] = $iKey;
+                        }
+                      }
                   ?>
                   <tr>
                     <td data-order="<?=$aViolation->violation_report?>"><a href="#" data-toggle="modal" data-target="#modal-details" onclick="fillDetails(<?=$aViolation->violation_id?>)"><?=date('Y/m/d', $aViolation->violation_report)?></a></td>
@@ -306,6 +317,15 @@
     var aUsersList = JSON.parse('<?=json_encode($aUsersList, true)?>');
     var aViolations = JSON.parse('<?=json_encode($aViolations, true)?>');
 
+    var oTopViolations = JSON.parse('<?=json_encode($aTopViolations, true)?>');
+    console.log(oTopViolations);
+    Object.keys(oTopViolations).forEach(function(sKey) {
+      console.log(sKey);
+      console.log(aViolations[oTopViolations[sKey]]);
+
+    });
+    
+
     function formatDate(iTimestamp) {
       return new Date(iTimestamp * 1000).toISOString().slice(0,10).split('-').join('/')
     }
@@ -408,6 +428,7 @@
         return obj.violation_id === iViolationId
       });
       var oViolation = aResult[0];
+      var bDeletable = oViolation.violation_status === aViolations[oTopViolations[oViolation.violation_violator + '-' + oViolation.type_id]].violation_status && <?=session()->get('userSession')['account_id']?> === 1;
       var bReadonly = oViolation.account_id === <?=session()->get('userSession')['account_id']?> ||  <?=session()->get('userSession')['account_id']?> === 1? false : true;
       $('#detailFiled').val(formatDate(oViolation.violation_report)).attr('readonly', true);
       $('#detailDate').val(formatDate(oViolation.violation_date)).attr('readonly', bReadonly);
@@ -421,6 +442,9 @@
       } else {
         $('#detailFooter').html('<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button><button type="button" onclick="modifyViolation('+ iViolationId +')" class="btn btn-primary">Save changes</button>');
         $('#detailId').val(iViolationId);
+      }
+      if (bDeletable === true) {
+        $('#detailFooter').append('<button type="button" onclick="deleteViolation('+ iViolationId +')" class="btn btn-danger">Delete Violation</button>');
       }
     }
 
@@ -595,5 +619,55 @@
         }
       });
     }
+
+    function deleteViolation(iViolationId) {
+        var oFormData = new FormData();
+        oFormData.append('violationId', iViolationId);
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "This action will delete the selected violation.",
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes!',
+          showLoaderOnConfirm: true,
+          preConfirm: () => {
+            return fetch('{{ url("/") }}/violations/delete', {
+              method:'POST',
+              headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+              body: oFormData
+            })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(response.statusText)
+                }
+                return response.json()
+              })
+              .catch(error => {
+                Swal.showValidationMessage(
+                  `Request failed: ${error}`
+                )
+              })
+          },
+          allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+          if (result.value.bResult === true) {
+            Swal.fire(
+              'Success!',
+              'Violation deleted successfully.',
+              'success'
+            ).then(function(){
+              location.reload();
+            })
+          } else {
+            Swal.fire(
+              'Error!',
+              result.value.sMessage,
+              'warning'
+            );
+          }
+        });
+      }
 </script>
 @endsection

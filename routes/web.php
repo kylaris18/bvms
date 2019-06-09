@@ -38,3 +38,5 @@ Route::get('/info', 'UserController@brgyInfo');
 Route::post('/info/modify', 'UserController@modifyBrgyInfo');
 Route::get('/users/update', 'UserController@updateUser');
 Route::post('/users/modify', 'UserController@modifyUser');
+Route::get('/violations/reports', 'DashboardController@reportList');
+Route::post('/violations/delete', 'DashboardController@deleteViolation');
