@@ -98,6 +98,7 @@
 <script src="{{ url('/') }}/js/select2.full.min.js"></script>
 <script src="{{ url('/') }}/js/bootstrap-datepicker.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 <script type="text/javascript">
   // Autocomplete setup
   var aViolators = JSON.parse('<?=json_encode($aViolators, true)?>');
@@ -177,17 +178,36 @@
     var oFormData = new FormData(this);
     oFormData.append('violationNotes', $('#violationNotes').val());
     
-    $.ajax({
-      type:'POST',
-      url: '{{ url("/") }}/violations/addViolation',
-      data: oFormData,
-      dataType:'JSON',
-      contentType: false,
-      cache: false,
-      processData: false,
-      headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-      success:function(aData){
-        if (aData.bResult === true) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This action will add a violation.",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return fetch('{{ url("/") }}/violations/addViolation', {
+            method:'POST',
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+            body: oFormData
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(response.statusText)
+              }
+              return response.json()
+            })
+            .catch(error => {
+              Swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+            })
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      }).then((result) => {
+        if (result.value.bResult === true) {
           Swal.fire(
             'Success!',
             'Violation added successfully.',
@@ -195,16 +215,14 @@
           ).then(function(){
             location.reload();
           })
-          location.href = '/violations/add';
         } else {
           Swal.fire(
-            'Error!',
-            aData.sMessage,
+            'Something went wrong!',
+            result.value.sMessage,
             'warning'
-          );
+          )
         }
-      }
-    });
+      });
   });
 
 

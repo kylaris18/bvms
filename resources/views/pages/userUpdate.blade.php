@@ -127,34 +127,52 @@
   $(document).on('submit', '#userForm', function (e) {
     e.preventDefault();
     var oFormData = new FormData(this);
-    
-    $.ajax({
-      type:'POST',
-      url: '{{ url("/") }}/users/modify',
-      data: oFormData,
-      dataType:'JSON',
-      contentType: false,
-      cache: false,
-      processData: false,
-      headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-      success:function(aData){
-        if (aData.bResult === true) {
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This action will update your profile details.",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes!',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          return fetch('{{ url("/") }}/users/modify', {
+            method:'POST',
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+            body: oFormData
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(response.statusText)
+              }
+              return response.json()
+            })
+            .catch(error => {
+              Swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+            })
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      }).then((result) => {
+        if (result.value.bResult === true) {
           Swal.fire(
             'Success!',
-            'User profile updated successfully.',
+            'Profile updated successfully.',
             'success'
           ).then(function(){
             location.reload();
-          });
+          })
         } else {
           Swal.fire(
-            'Error!',
-            aData.sMessage,
+            'Something went wrong!',
+            result.value.sMessage,
             'warning'
-          );
+          )
         }
-      }
-    });
+      });
   });
 
 
