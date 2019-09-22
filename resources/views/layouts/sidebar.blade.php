@@ -16,6 +16,12 @@
       <ul class="sidebar-menu" data-widget="tree">
         <li class="header">NAVIGATION</li>
         <li class="active treeview">
+          <a href="{{ url('/') }}/dashboard">
+            <i class="fa fa-bar-chart"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="treeview">
           <a href="{{ url('/') }}/violations/list">
             <i class="fa fa-eye"></i>
             <span>View Violations</span>

@@ -49,7 +49,7 @@
        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
        success:function(aData){
           if (aData.bResult === true) {
-            location.href = '/violations/list';
+            location.href = '/dashboard';
           } else {
             alert('Wrong username and/or password. Please try again.');
           }

@@ -76,7 +76,7 @@
                     <td><?=$aViolatorList[$aViolation->violation_violator]?></td>
                     <td><?=$aTypeList[$aViolation->type_id]?></td>
                     <td><?=$aUsersList[$aViolation->account_id]?></td>
-                    <td><?=date('Y/m/d', $aViolation->violation_date)?></td>
+                    <td><?=$aViolation->violation_month . '/' . $aViolation->violation_date . '/' . $aViolation->violation_year?></td>
                     <td data-order="<?=$aViolation->violation_status?>">
                       <?php
                         // Set Status
@@ -305,11 +305,13 @@
   <!-- /.content-wrapper -->
 @endsection
 @section('localjs')
-<script src="{{ url('/') }}/js/jquery.dataTables.min.js"></script>
+<!-- <script src="{{ url('/') }}/js/jquery.dataTables.min.js"></script> -->
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 <script src="{{ url('/') }}/js/dataTables.bootstrap.min.js"></script>
 <script src="{{ url('/') }}/js/bootstrap-datepicker.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 <script type="text/javascript">
 
     var aViolators = JSON.parse('<?=json_encode($aViolatorList, true)?>');
@@ -330,8 +332,19 @@
       return new Date(iTimestamp * 1000).toISOString().slice(0,10).split('-').join('/')
     }
 
+    function generateSelect(aValues, aDisplay, sFirst) {
+      var sSelect = `<select id='select` + sFirst + `' class="swal2-input"><option selected value=''>--Select ` + sFirst + `--</option>`;
+      var iValuesLength = aValues.length;
+      for (var iCounter = 0; iCounter < iValuesLength; iCounter++) {
+        sSelect += '<option value="'+aValues[iCounter]+'">'+aDisplay[iCounter]+'</option>';
+      }
+      return sSelect += '</select>';
+    }
+
     function generateReport() {
       var aViolatorList = Object.values(aViolators);
+      // var aViolations = Object.values(aViolations);
+      console.log(aTypeList);
       var sViolatorsHtml = '<datalist id="myCustomList">';
       var oReverseViolator = {};
       Object.keys(aViolators).forEach(function(iKey) {
@@ -340,20 +353,52 @@
       });
       sViolatorsHtml += '</datalist>';
       $('body').append(sViolatorsHtml);
+
+      var sTypesHtml = '<datalist id="typesList">';
+      var oReverseType = {};
+      Object.keys(aTypeList).forEach(function(iKey) {
+        sTypesHtml += '<option data-typeid="'+ iKey +'" value="'+ aTypeList[iKey] +'"/>';
+        oReverseType[aTypeList[iKey]] = iKey;
+      });
+      sTypesHtml += '</datalist>';
+      $('body').append(sTypesHtml);
+
+
+      var aYearSelect = [];
+      var oCurrDate = new Date();
+      var iYear = oCurrDate.getFullYear();
+      var iEndYear = iYear - 20;
+      for (var iCurrYear = iYear; iCurrYear > iEndYear; iCurrYear--) {
+        aYearSelect.push(iCurrYear);
+      }
+      var sYearSelect = generateSelect(aYearSelect, aYearSelect, 'Year');
+      var sMonthSelect = generateSelect([1,2,3,4,5,6,7,8,9,10,11,12], ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], 'Month');
       Swal.fire({
         title: 'Generate violator report.',
-        input: 'text',
-        inputAttributes: {
-          autocapitalize: 'off',
-          list: 'myCustomList',
-          id: 'reportId'
-        },
+        html:  `<input type="text" list="myCustomList" id="reportId" class="swal2-input" placeholder="Choose Violator">` +
+        `<input type="text" list="typesList" id="typeId" class="swal2-input" placeholder="Choose Violation Type">` +
+        sMonthSelect + sYearSelect,
+        // input: 'text',
+        // inputAttributes: {
+        //   autocapitalize: 'off',
+        //   list: 'myCustomList',
+        //   id: 'reportId'
+        // },
         showCancelButton: true,
         confirmButtonText: 'Look up',
         showLoaderOnConfirm: true,
         preConfirm: (login) => {
           var sViolatorName = $('#reportId').val();
-          return fetch(`{{ url("/") }}/report/generate/${oReverseViolator[sViolatorName]}`)
+          if (oReverseViolator[sViolatorName] === undefined) {
+            oReverseViolator[sViolatorName] = 0;
+          }
+          var sTypeId = $('#typeId').val();
+          if (oReverseType[sTypeId] === undefined) {
+            oReverseType[sTypeId] = 0;
+          }
+          var sYear = $('#selectYear').children('option:selected').val();
+          var sMonth = $('#selectMonth').children('option:selected').val();
+          return fetch(`{{ url("/") }}/report/generate/${oReverseViolator[sViolatorName]}?typeId=${oReverseType[sTypeId]}&&year=${sYear}&&month=${sMonth}`)
             .then(response => {
               if (!response.ok) {
                 throw new Error(response.statusText)
@@ -502,8 +547,28 @@
       });
     }
 
+    $('#violationsTable thead tr').clone(true).appendTo( '#violationsTable thead' );
+    $('#violationsTable thead tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        if (title !== "Action") {
+          $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+          $( 'input', this ).on( 'keyup change', function () {
+              if ( table.column(i).search() !== this.value ) {
+                  table
+                      .column(i)
+                      .search( this.value )
+                      .draw();
+              }
+          } );
+        } else {
+          $(this).text('');
+        }
+    } );
+ 
     $('#violationsTable').DataTable({
-      "order": [[ 0, "desc" ]]
+      "order": [[ 0, "desc" ]],
+      orderCellsTop: true,
+      fixedHeader: true
     });
 
     $('#violationDate').datepicker({

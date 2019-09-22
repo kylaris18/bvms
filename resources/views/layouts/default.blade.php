@@ -47,7 +47,8 @@
   @yield('body')
 </body>
 <!-- jQuery 3 -->
-<script src="{{ url('/') }}/js/jquery.min.js"></script>
+<!-- <script src="{{ url('/') }}/js/jquery.min.js"></script> -->
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <!-- Bootstrap 3.3.7 -->
 <script src="{{ url('/') }}/js/bootstrap.min.js"></script>
 <!-- AdminLTE -->

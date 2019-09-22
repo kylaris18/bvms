@@ -15,7 +15,7 @@
 //     return view('welcome');
 // });
 
-Route::get('/', 'UserController@index');
+Route::get('/', 'DashboardController@dashboard');
 Route::get('/login', 'UserController@loginView')->name('login');
 Route::post('/login', 'UserController@login');
 Route::get('/clear', function(){
@@ -23,6 +23,7 @@ Route::get('/clear', function(){
 	return redirect('/');
 });
 Route::get('/violations/list', 'DashboardController@index');
+Route::get('/dashboard', 'DashboardController@dashboard');
 Route::get('/violations/add', 'DashboardController@add');
 Route::post('/violations/addViolation', 'DashboardController@addViolation');
 Route::get('/violations/archive', 'DashboardController@archive');

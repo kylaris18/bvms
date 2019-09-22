@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\WithDrawings as PHPExcel_Worksheet_Drawing;
 
 class DashboardController extends BaseController
 {
@@ -17,6 +18,23 @@ class DashboardController extends BaseController
         $aUsers = DB::table('users')->get();
         $aTypes = DB::table('types')->get();
         return view('pages.violationList', [
+            'aViolators'  => $aViolators,
+            'aViolations' => $aViolations,
+            'aUsers'      => $aUsers,
+            'aTypes'      => $aTypes
+        ]);
+    }
+
+    public function dashboard()
+    {
+        if (session()->get('userSession') === null) {
+            return redirect()->route('login');
+        }
+        $aViolators = DB::table('violators')->get();
+        $aViolations = DB::table('violations')->latest()->get();
+        $aUsers = DB::table('users')->get();
+        $aTypes = DB::table('types')->get();
+        return view('pages.dashboard', [
             'aViolators'  => $aViolators,
             'aViolations' => $aViolations,
             'aUsers'      => $aUsers,
@@ -80,14 +98,17 @@ class DashboardController extends BaseController
             ];
             return $this->returnJson($aReturn);
         }
+        $oViolationDate = $this->getValidationDate($aNewViolation['violationDate']);
         $iViolationId = DB::table('violations')->insertGetId([
             'type_id'            => $iViolationType,
             'account_id'         => session()->get('userSession')['account_id'],
             'violation_violator' => $iViolatorId,
-            'violation_date'     => strtotime($aNewViolation['violationDate']),
+            'violation_date'     => $oViolationDate->date,
+            'violation_month'    => $oViolationDate->month,
+            'violation_year'     => $oViolationDate->year,
             'violation_report'   => time(),
             'violation_status'   => $aNewViolation['status'],
-            'violation_notes'    => $aNewViolation['violationNotes'],
+            'violation_notes'    => htmlentities($aNewViolation['violationNotes']),
             'violation_photo'    => $bImage === true ? $aNewViolation['violationProof'] : 'N/A'
         ]);
         if ($iViolationId === null) {
@@ -101,6 +122,15 @@ class DashboardController extends BaseController
             'bResult' => true
         ];
         return $this->returnJson($aReturn);
+    }
+
+    public function getValidationDate($sDate){
+        $aDate = explode('/', $sDate);
+        return (object) [
+            'year'  => $aDate[2],
+            'month' => $aDate[0],
+            'date'  => $aDate[1]
+        ];
     }
 
     public function checkViolation($iViolatorId, $aNewViolation)
@@ -142,8 +172,11 @@ class DashboardController extends BaseController
     public function modifyViolation(Request $request)
     {
         $aViolation = $request->all();
+        $oViolationDate = $this->getValidationDate($aViolation['violationDate']);
         $aModifyData = [
-            'violation_date'  => strtotime($aViolation['violationDate']),
+            'violation_date'  => $oViolationDate->date,
+            'violation_month' => $oViolationDate->month,
+            'violation_year'  => $oViolationDate->year,
             'violation_notes' => $aViolation['violationNotes']
         ];
         $bImage = array_key_exists('violationProof', $aViolation);
@@ -185,11 +218,23 @@ class DashboardController extends BaseController
     public function generateReport($iViolatorId)
     {
         // $iViolatorId = Input::get('violatorId');
-        $aViolator = DB::table('violators')->where('violator_id', $iViolatorId)->first();
-        if ($aViolator->violator_mname === 'N/A') {
-            $aViolator->violator_mname = '';
+        $aParams = Input::all();
+        $aViolators = DB::table('violators');
+        if ($iViolatorId !== '0') {
+            $aViolators = $aViolators->where('violator_id', $iViolatorId);
         }
-        $sViolator = $aViolator->violator_lname . ', ' . $aViolator->violator_fname . ' ' . $aViolator->violator_mname;
+        $aViolators = $aViolators->get();
+        $aViolatorsList = [];
+        foreach ($aViolators as $aViolator) {
+            if ($aViolator->violator_mname === 'N/A') {
+                $aViolator->violator_mname = '';
+            }
+            $aViolatorsList[$aViolator->violator_id] = $aViolator->violator_lname . ', ' . $aViolator->violator_fname . ' ' . $aViolator->violator_mname;
+        }
+
+        // $aViolator = DB::table('violators')->where('violator_id', $iViolatorId)->first();
+        
+        // $sViolator = $aViolator->violator_lname . ', ' . $aViolator->violator_fname . ' ' . $aViolator->violator_mname;
         $aUsers = DB::table('users')->get();
         $aTypes = DB::table('types')->get();
 
@@ -205,9 +250,20 @@ class DashboardController extends BaseController
             $aUsersList[$aTempUsers->account_id] = $aTempUsers->user_lname . ', ' . $aTempUsers->user_fname;
         }
 
-        $aViolations = DB::table('violations')
-            ->where('violation_violator', $iViolatorId)
-            ->orderBy('type_id', 'desc')
+        $aViolations = DB::table('violations');
+        if ($iViolatorId !== '0') {
+            $aViolations = $aViolations->where('violation_violator', $iViolatorId);
+        }
+        if ($aParams['typeId'] !== '0') {
+            $aViolations = $aViolations->where('type_id', $aParams['typeId']);
+        }
+        if (!is_null($aParams['year'])) {
+            $aViolations = $aViolations->where('violation_year', $aParams['year']);
+        }
+        if (!is_null($aParams['month'])) {
+            $aViolations = $aViolations->where('violation_month', $aParams['month']);
+        }
+        $aViolations = $aViolations->orderBy('type_id', 'desc')
             ->orderBy('violation_status', 'asc')
             ->get()
             ->toArray();
@@ -222,6 +278,7 @@ class DashboardController extends BaseController
             'Offence Resolution'
         ];
         $aViolationData = [];
+        
         foreach($aViolations as $aViolation) {
             $sStatus = '';
             if ($aViolation->violation_status === 1) {
@@ -236,8 +293,8 @@ class DashboardController extends BaseController
             $aViolationData[] = [
                 'Violation Type'     => $aTypeList[$aViolation->type_id],
                 'Reporter'           => $aUsersList[$aViolation->account_id],
-                'Offender'           => $sViolator,
-                'Violation Date'     => date('m/d/Y', $aViolation->violation_date),
+                'Offender'           => $aViolatorsList[$aViolation->violation_violator],
+                'Violation Date'     => $aViolation->violation_month . '/' . $aViolation->violation_date . '/' . $aViolation->violation_year,
                 'Date Filed'         => date('m/d/Y', $aViolation->violation_report),
                 'Violation Status'   => $sStatus,
                 'Violation Notes'    => $aViolation->violation_notes,

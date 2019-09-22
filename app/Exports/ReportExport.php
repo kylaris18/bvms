@@ -37,8 +37,7 @@ class ReportExport implements FromCollection, WithHeadings, ShouldAutoSize, With
         return [
             AfterSheet::class    => function(AfterSheet $event) {
                 $headerCellRange = 'A1:H1'; // All headers
-                $dataCellRange = 'A2:H' . strval(count($this->aData) + 1);
-
+                $dataCellRange = 'A2:H' . strval(count($this->aData) + 1);      
                 
                 $headerStyleArray = [
                     'borders' => [
@@ -60,7 +59,8 @@ class ReportExport implements FromCollection, WithHeadings, ShouldAutoSize, With
                 $event->sheet->getDelegate()->getStyle($headerCellRange)->getFont()->setSize(14);
                 $event->sheet->getDelegate()->getStyle($headerCellRange)->applyFromArray($headerStyleArray);
                 $event->sheet->getDelegate()->getStyle($dataCellRange)->applyFromArray($dataStyleArray);
-                $event->sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+                $event->sheet->getPageSetup()->setOrientation('landscape');
+                $event->sheet->getPageSetup()->setFitToPage(true);
             },
         ];
     }
