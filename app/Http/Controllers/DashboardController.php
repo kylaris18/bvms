@@ -294,7 +294,7 @@ class DashboardController extends BaseController
                 'Violation Type'     => $aTypeList[$aViolation->type_id],
                 'Reporter'           => $aUsersList[$aViolation->account_id],
                 'Offender'           => $aViolatorsList[$aViolation->violation_violator],
-                'Violation Date'     => $aViolation->violation_month . '/' . $aViolation->violation_date . '/' . $aViolation->violation_year,
+                'Violation Date'     => $aViolation->violation_year . '/' . $aViolation->violation_month . '/' . $aViolation->violation_date,
                 'Date Filed'         => date('m/d/Y', $aViolation->violation_report),
                 'Violation Status'   => $sStatus,
                 'Violation Notes'    => $aViolation->violation_notes,

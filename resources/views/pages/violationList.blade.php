@@ -76,7 +76,7 @@
                     <td><?=$aViolatorList[$aViolation->violation_violator]?></td>
                     <td><?=$aTypeList[$aViolation->type_id]?></td>
                     <td><?=$aUsersList[$aViolation->account_id]?></td>
-                    <td><?=$aViolation->violation_month . '/' . $aViolation->violation_date . '/' . $aViolation->violation_year?></td>
+                    <td><?=$aViolation->violation_year . '/' . $aViolation->violation_month . '/' . $aViolation->violation_date?></td>
                     <td data-order="<?=$aViolation->violation_status?>">
                       <?php
                         // Set Status
@@ -565,7 +565,7 @@
         }
     } );
  
-    $('#violationsTable').DataTable({
+    var table = $('#violationsTable').DataTable({
       "order": [[ 0, "desc" ]],
       orderCellsTop: true,
       fixedHeader: true
