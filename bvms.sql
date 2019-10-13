@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.8.5
+-- version 4.9.0.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 22, 2019 at 06:11 AM
--- Server version: 10.1.38-MariaDB
--- PHP Version: 7.2.16
+-- Generation Time: Oct 13, 2019 at 03:57 AM
+-- Server version: 10.3.15-MariaDB
+-- PHP Version: 7.2.19
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -42,12 +42,16 @@ CREATE TABLE `accounts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+-- Truncate table before insert `accounts`
+--
+
+TRUNCATE TABLE `accounts`;
+--
 -- Dumping data for table `accounts`
 --
 
 INSERT INTO `accounts` (`account_id`, `account_uname`, `account_password`, `account_type`, `account_suspend`, `created_at`, `updated_at`) VALUES
-(1, 'ecruz', 'e64dfbc42b4939ad984e4fc398cdd4d826873e51', 0, 0, NULL, NULL),
-(2, 'kylaris18', 'e64dfbc42b4939ad984e4fc398cdd4d826873e51', 1, 0, NULL, NULL);
+(1, 'ecruz', 'e64dfbc42b4939ad984e4fc398cdd4d826873e51', 0, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -66,6 +70,11 @@ CREATE TABLE `brgies` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Truncate table before insert `brgies`
+--
+
+TRUNCATE TABLE `brgies`;
 --
 -- Dumping data for table `brgies`
 --
@@ -88,18 +97,10 @@ CREATE TABLE `councilors` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `councilors`
+-- Truncate table before insert `councilors`
 --
 
-INSERT INTO `councilors` (`id`, `councilor_name`, `created_at`, `updated_at`) VALUES
-(1, 'Neslie Magtanggol', NULL, NULL),
-(2, 'Robert Cruz', NULL, NULL),
-(3, 'Pamela Remoquilo', NULL, NULL),
-(4, 'John Marvin Bien', NULL, NULL),
-(5, 'Christian Felipe', NULL, NULL),
-(6, 'Kenneth Piezas', NULL, NULL),
-(7, 'Jasmin Alora', NULL, NULL);
-
+TRUNCATE TABLE `councilors`;
 -- --------------------------------------------------------
 
 --
@@ -113,6 +114,11 @@ CREATE TABLE `migrations` (
   `batch` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Truncate table before insert `migrations`
+--
+
+TRUNCATE TABLE `migrations`;
 --
 -- Dumping data for table `migrations`
 --
@@ -145,23 +151,10 @@ CREATE TABLE `reports` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `reports`
+-- Truncate table before insert `reports`
 --
 
-INSERT INTO `reports` (`report_id`, `account_id`, `violator_id`, `report_path`, `report_date`, `created_at`, `updated_at`) VALUES
-(1, 1, 6, '/storage/reports/1569074190.xlsx', '1569074190', NULL, NULL),
-(2, 1, 6, '/storage/reports/1569075607.xlsx', '1569075607', NULL, NULL),
-(3, 1, 6, '/storage/reports/1569078150.xlsx', '1569078150', NULL, NULL),
-(4, 1, 6, '/storage/reports/1569079048.xlsx', '1569079048', NULL, NULL),
-(5, 1, 6, '/storage/reports/1569079085.xlsx', '1569079085', NULL, NULL),
-(6, 1, 6, '/storage/reports/1569079690.xlsx', '1569079690', NULL, NULL),
-(7, 1, 6, '/storage/reports/1569080500.xlsx', '1569080500', NULL, NULL),
-(8, 1, 6, '/storage/reports/1569083619.xlsx', '1569083619', NULL, NULL),
-(9, 1, 6, '/storage/reports/1569085528.xlsx', '1569085528', NULL, NULL),
-(10, 1, 6, '/storage/reports/1569093656.xlsx', '1569093656', NULL, NULL),
-(11, 1, 6, '/storage/reports/1569111706.xlsx', '1569111706', NULL, NULL),
-(12, 1, 7, '/storage/reports/1569115518.xlsx', '1569115518', NULL, NULL);
-
+TRUNCATE TABLE `reports`;
 -- --------------------------------------------------------
 
 --
@@ -177,17 +170,10 @@ CREATE TABLE `types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `types`
+-- Truncate table before insert `types`
 --
 
-INSERT INTO `types` (`type_id`, `type_name`, `created_at`, `updated_at`) VALUES
-(1, 'Loitering', NULL, NULL),
-(2, 'No Entry', NULL, NULL),
-(3, 'No Parking', NULL, NULL),
-(4, 'No Loading/Unloading', NULL, NULL),
-(5, 'Illegal Vending', NULL, NULL),
-(6, 'Jaywalking', NULL, NULL);
-
+TRUNCATE TABLE `types`;
 -- --------------------------------------------------------
 
 --
@@ -207,12 +193,16 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+-- Truncate table before insert `users`
+--
+
+TRUNCATE TABLE `users`;
+--
 -- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`user_id`, `account_id`, `user_fname`, `user_lname`, `user_contactno`, `user_photo`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Emmanuel', 'Labao', '9476025547', '/storage/profile/1569115605.jpg', NULL, NULL),
-(2, 2, 'Dan', 'Fernandez', '09476085541', '/storage/profile/1569088635.jpg', NULL, NULL);
+(1, 1, 'Emmanuel', 'Labao', '9476025547', '/storage/profile/1569126976.png', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -239,15 +229,10 @@ CREATE TABLE `violations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `violations`
+-- Truncate table before insert `violations`
 --
 
-INSERT INTO `violations` (`violation_id`, `type_id`, `account_id`, `violation_violator`, `violation_date`, `violation_month`, `violation_year`, `violation_status`, `violation_report`, `violation_resolution`, `violation_notes`, `violation_photo`, `created_at`, `updated_at`) VALUES
-(16, 1, 1, 6, '22', 6, 2019, 1, '1560050256', NULL, 'sdvasdfasd', '/storage/uploads/1569082374.jpg', NULL, NULL),
-(17, 3, 1, 6, '22', 6, 2019, 1, '1560050272', NULL, 'sfasdfasdf', '/storage/uploads/1569082337.jpg', NULL, NULL),
-(18, 3, 1, 6, '22', 6, 2019, 2, '1560050288', 'ssdfgsdfg', 'zdsfas', '/storage/uploads/1569082322.jpg', NULL, NULL),
-(21, 2, 1, 6, '21', 9, 2019, 1, '1569124938', 'sdgsgsdgsdgf', 'ergafgsgfsdf', '/storage/uploads/1569124938.jpg', NULL, NULL);
-
+TRUNCATE TABLE `violations`;
 -- --------------------------------------------------------
 
 --
@@ -266,13 +251,10 @@ CREATE TABLE `violators` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `violators`
+-- Truncate table before insert `violators`
 --
 
-INSERT INTO `violators` (`violator_id`, `violator_lname`, `violator_fname`, `violator_mname`, `violator_count`, `created_at`, `updated_at`) VALUES
-(6, 'Labao', 'Christian Jay', 'Mendoza', 0, NULL, NULL),
-(7, 'Labao', 'Casey', 'Mendoza', 0, NULL, NULL);
-
+TRUNCATE TABLE `violators`;
 --
 -- Indexes for dumped tables
 --
@@ -351,7 +333,7 @@ ALTER TABLE `brgies`
 -- AUTO_INCREMENT for table `councilors`
 --
 ALTER TABLE `councilors`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -363,13 +345,13 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `reports`
 --
 ALTER TABLE `reports`
-  MODIFY `report_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `report_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `types`
 --
 ALTER TABLE `types`
-  MODIFY `type_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `type_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -381,13 +363,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `violations`
 --
 ALTER TABLE `violations`
-  MODIFY `violation_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `violation_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `violators`
 --
 ALTER TABLE `violators`
-  MODIFY `violator_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `violator_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
